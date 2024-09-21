@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -23,6 +24,7 @@
   "homepage": "https://github.com/uzair004/email-engine-imap-oauth#readme",
   "dependencies": {
     "dotenv": "^16.4.5",
-    "imapflow": "^1.0.164"
+    "imapflow": "^1.0.164",
+    "postal-mime": "^2.2.9"
   }
 }
