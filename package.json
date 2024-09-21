@@ -25,6 +25,6 @@
   "dependencies": {
     "dotenv": "^16.4.5",
     "imapflow": "^1.0.164",
-    "postal-mime": "^2.2.9"
+    "mailparser": "^3.7.1"
   }
 }
