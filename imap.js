@@ -1,26 +1,29 @@
-const { ImapFlow } = require('imapflow');
-require('dotenv').config();
+import { ImapFlow } from 'imapflow';
+import { simpleParser } from 'mailparser';
+import 'dotenv/config'
 
-const client = new ImapFlow({ host: 'imap.gmail.com', port: 993, secure: true, auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS } })
+const client = new ImapFlow({ logger: false, host: 'imap.gmail.com', port: 993, secure: true, auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS } })
 
-async function main(mailbox) {
-
-    await connectClient()
-
-    const mailboxLock = await connectMailbox('INBOX');
-
-    if (!mailboxLock) {
-        console.log(`Failed to aquire or connect to ${mailbox} `)
-        return
+async function main(mailbox = 'INBOX') {
+  try {
+    await connectClient();
+    const lock = await connectMailbox(mailbox);
+    
+    if (!lock) {
+      console.log(`Failed to acquire or connect to ${mailbox}`);
+      return;
     }
-
-    await fetchMessages()
-
-    // list subjects for all messages
-    for await (let message of client.fetch('1*', { envelope: true }))
-        console.log(`${message.uid}: ${message.envelope.subject}`);
-
-    await logoutClient()
+    
+    try {
+      await fetchAndParseMessages();
+    } finally {
+      lock.release();
+    }
+  } catch (error) {
+    console.error('Error in main function:', error);
+  } finally {
+    await logoutClient();
+  }
 }
 
 async function connectClient() {
@@ -28,23 +31,40 @@ async function connectClient() {
 }
 
 async function connectMailbox(mailbox) {
-    let lock
-    try {
-        lock = await client.getMailboxLock('INBOX');
-    } finally {
-        lock.release()
-    }
-
-    if (!lock) return null
-
-    return lock
+  try {
+    const lock = await client.getMailboxLock(mailbox);
+    console.log(`Connected to mailbox: ${mailbox}`);
+    return lock;
+  } catch (error) {
+    console.error(`Error connecting to mailbox ${mailbox}:`, error);
+    return null;
+  }
 }
 
 
-async function fetchMessages() {
-    const message = await client.fetchOne(client.mailbox.exists, { source: true });
-    console.log(message.source.toString());
-    return message
+async function fetchAndParseMessages() {
+  // Fetch the last 5 messages
+  for await (let message of client.fetch('1:1', { source: true, envelope: true })) {
+    console.log(`Processing message ${message.uid}: ${message.envelope.subject}`);
+    
+    try {
+       const parsed = await simpleParser(message.source);
+      console.log('Parsed message:', {
+        subject: parsed.subject,
+        from: parsed.from?.value,
+        to: parsed.to?.value,
+        text: parsed.text,
+        html: parsed.html ? 'HTML content available' : 'No HTML content'
+      });
+      
+      // You can process attachments here if needed
+      if (parsed.attachments.length > 0) {
+        console.log('Attachments:', parsed.attachments.map(att => att.filename));
+      }
+    } catch (error) {
+      console.error(`Error parsing message ${message.uid}:`, error);
+    }
+  }
 }
 
 
