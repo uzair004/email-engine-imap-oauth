@@ -1,0 +1,30 @@
+{
+  "name": "email-engine-nodejs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uzair004/email-engine-imap-oauth.git"
+  },
+  "keywords": [
+    "imap",
+    "email-engine",
+    "oauth2"
+  ],
+  "author": "uzair",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/uzair004/email-engine-imap-oauth/issues"
+  },
+  "homepage": "https://github.com/uzair004/email-engine-imap-oauth#readme",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "imapflow": "^1.0.164",
+    "mailparser": "^3.7.1"
+  }
+}
